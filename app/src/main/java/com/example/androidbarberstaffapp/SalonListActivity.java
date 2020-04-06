@@ -14,7 +14,7 @@ import com.example.androidbarberstaffapp.Adapter.MySalonAdapter;
 import com.example.androidbarberstaffapp.Common.SpacesItemDecoration;
 import com.example.androidbarberstaffapp.Interface.IBranchLoadListener;
 import com.example.androidbarberstaffapp.Interface.IOnLoadCountSalon;
-import com.example.androidbarberstaffapp.Model.Common;
+import com.example.androidbarberstaffapp.Common.Common;
 import com.example.androidbarberstaffapp.Model.Salon;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;

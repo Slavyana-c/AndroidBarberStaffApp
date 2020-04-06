@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.androidbarberstaffapp.Interface.IRecyclerItemSelectedListener;
 import com.example.androidbarberstaffapp.Model.City;
-import com.example.androidbarberstaffapp.Model.Common;
+import com.example.androidbarberstaffapp.Common.Common;
 import com.example.androidbarberstaffapp.R;
 import com.example.androidbarberstaffapp.SalonListActivity;
 
