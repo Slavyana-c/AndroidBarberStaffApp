@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,6 +23,7 @@ public class MyStateAdapter extends RecyclerView.Adapter<MyStateAdapter.MyViewHo
 
     Context context;
     List<City> cityList;
+    int lastPosition = -1;
 
     public MyStateAdapter(Context context, List<City> cityList) {
         this.context = context;
@@ -40,6 +43,8 @@ public class MyStateAdapter extends RecyclerView.Adapter<MyStateAdapter.MyViewHo
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         holder.txt_state_name.setText(cityList.get(position).getName());
 
+        setAnimation(holder.itemView, position);
+
         holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
             @Override
             public void onItemSelectedListener(View view, int pos) {
@@ -47,6 +52,16 @@ public class MyStateAdapter extends RecyclerView.Adapter<MyStateAdapter.MyViewHo
             }
         });
 
+    }
+
+    private void setAnimation(View itemView, int position) {
+        if(position > lastPosition) {
+            Animation animation = AnimationUtils.loadAnimation(context,
+                    android.R.anim.slide_in_left);
+
+            itemView.startAnimation(animation);
+            lastPosition = position;
+        }
     }
 
     @Override
