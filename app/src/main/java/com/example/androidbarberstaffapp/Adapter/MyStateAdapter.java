@@ -1,6 +1,7 @@
-package com.example.androidbarberstaffapp;
+package com.example.androidbarberstaffapp.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.androidbarberstaffapp.Interface.IRecyclerItemSelectedListener;
 import com.example.androidbarberstaffapp.Model.City;
+import com.example.androidbarberstaffapp.Model.Common;
+import com.example.androidbarberstaffapp.R;
+import com.example.androidbarberstaffapp.SalonListActivity;
 
 import java.util.List;
 
@@ -40,7 +44,7 @@ public class MyStateAdapter extends RecyclerView.Adapter<MyStateAdapter.MyViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
         holder.txt_state_name.setText(cityList.get(position).getName());
 
         setAnimation(holder.itemView, position);
@@ -48,7 +52,10 @@ public class MyStateAdapter extends RecyclerView.Adapter<MyStateAdapter.MyViewHo
         holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
             @Override
             public void onItemSelectedListener(View view, int pos) {
-                // Implement later
+                Common.state_name = cityList.get(position).getName();
+                context.startActivity(new Intent(context, SalonListActivity.class));
+
+
             }
         });
 
