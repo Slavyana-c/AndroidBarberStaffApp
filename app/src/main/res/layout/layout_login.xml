@@ -54,7 +54,7 @@
         android:weightSum="4">
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/btn_login"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
@@ -68,7 +68,7 @@
             android:paddingRight="10dp"/>
 
         <Button
-            android:id="@+id/button1"
+            android:id="@+id/btn_cancel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
