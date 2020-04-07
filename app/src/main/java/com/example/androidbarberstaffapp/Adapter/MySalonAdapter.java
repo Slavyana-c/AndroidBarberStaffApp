@@ -18,13 +18,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.androidbarberstaffapp.Common.Common;
 import com.example.androidbarberstaffapp.Common.CustomLoginDialog;
 import com.example.androidbarberstaffapp.Interface.IDialogClickListener;
+import com.example.androidbarberstaffapp.Interface.IGetBarberListener;
 import com.example.androidbarberstaffapp.Interface.IRecyclerItemSelectedListener;
+import com.example.androidbarberstaffapp.Interface.IUserLoginRememberListener;
+import com.example.androidbarberstaffapp.Model.Barber;
 import com.example.androidbarberstaffapp.Model.Salon;
 import com.example.androidbarberstaffapp.R;
 import com.example.androidbarberstaffapp.StaffHomeActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -38,14 +42,17 @@ public class MySalonAdapter extends RecyclerView.Adapter<MySalonAdapter.MyViewHo
     Context context;
     List<Salon> salonList;
     List<CardView> cardViewList;
-    LocalBroadcastManager localBroadcastManager;
+
+    IUserLoginRememberListener iUserLoginRememberListener;
+    IGetBarberListener iGetBarberListener;
 
 
-    public MySalonAdapter(Context context, List<Salon> salonList) {
+    public MySalonAdapter(Context context, List<Salon> salonList, IUserLoginRememberListener iUserLoginRememberListener, IGetBarberListener iGetBarberListener) {
         this.context = context;
         this.salonList = salonList;
         this.cardViewList = new ArrayList<>();
-         localBroadcastManager = LocalBroadcastManager.getInstance(context);
+        this.iGetBarberListener = iGetBarberListener;
+        this.iUserLoginRememberListener = iUserLoginRememberListener;
     }
 
     @NonNull
@@ -114,6 +121,16 @@ public class MySalonAdapter extends RecyclerView.Adapter<MySalonAdapter.MyViewHo
                             if(task.getResult().size() > 0) {
                                 dialogInterface.dismiss();
                                 loading.dismiss();
+                                iUserLoginRememberListener.onUserLoginSuccess(userName);
+
+                                // Create Barber
+                                Barber barber = new Barber();
+                                for(DocumentSnapshot barberSnapshot:task.getResult()) {
+                                    barber = barberSnapshot.toObject(Barber.class);
+                                    barber.setBarberId(barberSnapshot.getId());
+                                }
+
+                                iGetBarberListener.onGetBarberSuccess(barber);
 
                                 // Clear previous activities and navigate to Staff Home
                                 Intent staffHome = new Intent(context, StaffHomeActivity.class);
