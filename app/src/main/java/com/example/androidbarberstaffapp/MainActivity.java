@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements IOnAllStateLoadLi
             public void onComplete(@NonNull Task<InstanceIdResult> task) {
                 if(task.isSuccessful()) {
                      Common.updateToken(MainActivity.this, task.getResult().getToken());
-                     Log.d("MYNEWTOKEN", "." + task.getResult().getToken());
+                     Log.d("MYNEWTOKEN", task.getResult().getToken());
                 }
             }
         });
