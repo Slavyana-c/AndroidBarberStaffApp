@@ -10,9 +10,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
-            android:name=".Service.MyFCMService"
-            android:enabled="false"
-            android:exported="false"></service>
+            android:name=".Service.MyFCMService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
 
         <activity android:name=".StaffHomeActivity" />
         <activity android:name=".SalonListActivity" />

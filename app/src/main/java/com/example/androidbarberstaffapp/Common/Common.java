@@ -101,7 +101,7 @@ public class Common {
                     noti_id,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
-
+        }
             String NOTIFICATION_CHANNEL_ID = "barber_staff_app";
             NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -134,7 +134,7 @@ public class Common {
 
             notificationManager.notify(noti_id, mNotification);
 
-        }
+
     }
 
 
