@@ -37,6 +37,7 @@ public class Common {
     public static final String BARBER_KEY = "BARBER";
     public static final String TITLE_KEY = "title";
     public static final String CONTENT_KEY = "content";
+    public static final int MAX_NOTIFICATIONS_PER_LOAD = 10;
     public static String state_name="";
     public static Salon selectedSalon;
     public static Barber currentBarber;

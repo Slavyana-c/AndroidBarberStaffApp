@@ -100,6 +100,14 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
         if(actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
+
+        if(item.getItemId() == R.id.action_new_notification) {
+
+            startActivity(new Intent(StaffHomeActivity.this, NotificationActivity.class));
+            txt_notification_badge.setText("");
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -378,7 +386,6 @@ public class StaffHomeActivity extends AppCompatActivity implements ITimeSlotLoa
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        // ADD ON FAILURE
                         Toast.makeText(StaffHomeActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
