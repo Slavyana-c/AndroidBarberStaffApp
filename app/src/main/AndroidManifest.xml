@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".NotificationActivity"></activity>
+        <activity android:name=".DoneServicesActivity"></activity>
+        <activity android:name=".NotificationActivity" />
 
         <service android:name=".Service.MyFCMService">
             <intent-filter>
