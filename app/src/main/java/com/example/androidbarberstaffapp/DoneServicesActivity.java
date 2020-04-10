@@ -6,6 +6,7 @@ import androidx.appcompat.widget.AppCompatAutoCompleteTextView;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -16,8 +17,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.androidbarberstaffapp.Common.Common;
+import com.example.androidbarberstaffapp.Fragments.ShoppingFragment;
 import com.example.androidbarberstaffapp.Interface.IBarberServicesLoadListener;
+import com.example.androidbarberstaffapp.Interface.IOnShoppingItemSelected;
 import com.example.androidbarberstaffapp.Model.BarberService;
+import com.example.androidbarberstaffapp.Model.ShoppingItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,7 +42,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dmax.dialog.SpotsDialog;
 
-public class DoneServicesActivity extends AppCompatActivity implements IBarberServicesLoadListener {
+public class DoneServicesActivity extends AppCompatActivity implements IBarberServicesLoadListener, IOnShoppingItemSelected {
 
     @BindView(R.id.txt_customer_name)
     TextView txt_customer_name;
@@ -58,8 +62,8 @@ public class DoneServicesActivity extends AppCompatActivity implements IBarberSe
     @BindView(R.id.img_customer_hair)
     ImageView img_customer_hair;
 
-    @BindView(R.id.btn_shopping)
-    Button btn_shopping;
+    @BindView(R.id.add_shopping)
+    ImageView add_shopping;
 
     @BindView(R.id.btn_finish)
     Button btn_finish;
@@ -69,6 +73,7 @@ public class DoneServicesActivity extends AppCompatActivity implements IBarberSe
     IBarberServicesLoadListener iBarberServicesLoadListener;
 
     HashSet<BarberService> serviceAdded = new HashSet<>();
+    List<ShoppingItem> shoppingItems = new ArrayList<>();
 
     LayoutInflater inflater;
 
@@ -80,11 +85,27 @@ public class DoneServicesActivity extends AppCompatActivity implements IBarberSe
         ButterKnife.bind(this);
 
         init();
+        
+        initView();
 
         setCustomerInformation();
 
         loadBarberServices();
 
+    }
+
+    private void initView() {
+
+        getSupportActionBar().setTitle("Checkout");
+
+        add_shopping.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ShoppingFragment shoppingFragment = ShoppingFragment.getInstance(DoneServicesActivity.this);
+                shoppingFragment.show(getSupportFragmentManager(), "Shopping");
+
+            }
+        });
     }
 
     private void init() {
@@ -176,7 +197,7 @@ public class DoneServicesActivity extends AppCompatActivity implements IBarberSe
                     item.setOnCloseIconClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            chip_group_services.removeView(view);
+                            chip_group_services.removeView(v);
                             serviceAdded.remove((int)item.getTag());
                         }
                     });
@@ -198,6 +219,28 @@ public class DoneServicesActivity extends AppCompatActivity implements IBarberSe
     public void onBarberServicesLoadFailed(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         dialog.dismiss();
+
+    }
+
+    @Override
+    public void onShoppingItemSelected(ShoppingItem shoppingItem) {
+        shoppingItems.add(shoppingItem);
+        Log.d("ShoppingItem", ""+shoppingItems.size());
+
+        Chip item = (Chip) inflater.inflate(R.layout.chip_item, null);
+        item.setText(shoppingItem.getName());
+        item.setTag(shoppingItems.indexOf(shoppingItem));
+        edit_services.setText("");
+
+        item.setOnCloseIconClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chip_group_services.removeView(v);
+                serviceAdded.remove((int)item.getTag());
+            }
+        });
+
+        chip_group_services.addView(item);
 
     }
 }
