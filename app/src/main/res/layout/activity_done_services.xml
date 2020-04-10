@@ -55,7 +55,7 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.appcompat.widget.AppCompatAutoCompleteTextView
-        android:id="@+id/edt_services"
+        android:id="@+id/edit_services"
         android:hint="Services"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

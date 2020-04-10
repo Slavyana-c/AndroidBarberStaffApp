@@ -6,17 +6,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.example.androidbarberstaffapp.Common.Common;
+import com.example.androidbarberstaffapp.DoneServicesActivity;
 import com.example.androidbarberstaffapp.Interface.IRecyclerItemSelectedListener;
-import com.example.androidbarberstaffapp.Model.TimeSlot;
+import com.example.androidbarberstaffapp.Model.BookingInformation;
 import com.example.androidbarberstaffapp.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +30,7 @@ import java.util.List;
 public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.MyViewHolder> {
 
     Context context;
-    List<TimeSlot> timeSlotList;
+    List<BookingInformation> timeSlotList;
     List<CardView> cardViewList;
 
     public MyTimeSlotAdapter(Context context) {
@@ -33,7 +39,7 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
         cardViewList = new ArrayList<>();
     }
 
-    public MyTimeSlotAdapter(Context context, List<TimeSlot> timeSlotList) {
+    public MyTimeSlotAdapter(Context context, List<BookingInformation> timeSlotList) {
         this.context = context;
         this.timeSlotList = timeSlotList;
         cardViewList = new ArrayList<>();
@@ -58,46 +64,81 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
             holder.txt_time_slot_description.setTextColor(context.getResources().getColor(android.R.color.black));
             holder.txt_time_slot.setTextColor(context.getResources().getColor(android.R.color.black));
 
+            holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                @Override
+                public void onItemSelectedListener(View view, int pos) {
+
+                }
+            });
 
         }
 
         // some slots are full
         else {
-             for(TimeSlot slotValue:timeSlotList) {
+
+             for(BookingInformation slotValue:timeSlotList) {
                  int slot = Integer.parseInt(slotValue.getSlot().toString());
+
                  if(slot == position) {
 
-                     // Can't select full slot
                      holder.card_time_slot.setTag(Common.DISABLE_TAG);
                      holder.card_time_slot.setCardBackgroundColor( context.getResources().getColor(android.R.color.darker_gray));
 
                      holder.txt_time_slot_description.setText("Full");
                      holder.txt_time_slot_description.setTextColor(context.getResources().getColor(android.R.color.white));
                      holder.txt_time_slot.setTextColor(context.getResources().getColor(android.R.color.white));
-                 }
 
+                     holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                         @Override
+                         public void onItemSelectedListener(View view, int pos) {
+
+                             // Get Booking info for full time slots
+                             FirebaseFirestore.getInstance()
+                                     .collection("AllSalons")
+                                     .document(Common.state_name)
+                                     .collection("Branch")
+                                     .document(Common.selectedSalon.getSalonId())
+                                     .collection("Barber")
+                                     .document(Common.currentBarber.getBarberId())
+                                     .collection(Common.simpleDateFormat.format(Common.bookingDate.getTime()))
+                                     .document(slotValue.getSlot().toString())
+                                     .get()
+                                     .addOnFailureListener(new OnFailureListener() {
+                                         @Override
+                                         public void onFailure(@NonNull Exception e) {
+                                             Toast.makeText(context, e.getMessage() , Toast.LENGTH_SHORT).show();
+                                         }
+                                     }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                 @Override
+                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                     if (task.isSuccessful()) {
+                                         if (task.getResult().exists()) {
+                                             Common.currentBookingInformation = task.getResult().toObject(BookingInformation.class);
+                                             context.startActivity(new Intent(context, DoneServicesActivity.class));
+                                         }
+                                     }
+
+                                 }
+                             });
+
+                         }
+
+                     });
+                 }
+                 else {
+                     holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                         @Override
+                         public void onItemSelectedListener(View view, int pos) {
+
+                         }
+                     });
+                 }
              }
         }
 
         // Add all cards to list
         if(!cardViewList.contains(holder.card_time_slot))
             cardViewList.add(holder.card_time_slot);
-
-        // Check if time slot is available
-        holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
-            @Override
-            public void onItemSelectedListener(View view, int pos) {
-                // Loop all cards in card list
-                for(CardView cardView:cardViewList) {
-                    if(cardView.getTag() == null) { // change if available
-                        cardView.setCardBackgroundColor(context.getResources().getColor(android.R.color.white));
-                    }
-
-                    // Selected card
-                    holder.card_time_slot.setCardBackgroundColor(context.getResources().getColor(android.R.color.holo_orange_dark));
-                }
-            }
-        });
 
     }
 
