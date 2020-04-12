@@ -81,57 +81,83 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
 
                  if(slot == position) {
 
-                     holder.card_time_slot.setTag(Common.DISABLE_TAG);
-                     holder.card_time_slot.setCardBackgroundColor( context.getResources().getColor(android.R.color.darker_gray));
+                     if(!slotValue.isDone()) {
+                         holder.card_time_slot.setTag(Common.DISABLE_TAG);
+                         holder.card_time_slot.setCardBackgroundColor( context.getResources().getColor(android.R.color.darker_gray));
 
-                     holder.txt_time_slot_description.setText("Full");
-                     holder.txt_time_slot_description.setTextColor(context.getResources().getColor(android.R.color.white));
-                     holder.txt_time_slot.setTextColor(context.getResources().getColor(android.R.color.white));
+                         holder.txt_time_slot_description.setText("Full");
+                         holder.txt_time_slot_description.setTextColor(context.getResources().getColor(android.R.color.white));
+                         holder.txt_time_slot.setTextColor(context.getResources().getColor(android.R.color.white));
 
-                     holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
-                         @Override
-                         public void onItemSelectedListener(View view, int pos) {
+                         holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                             @Override
+                             public void onItemSelectedListener(View view, int pos) {
 
-                             // Get Booking info for full time slots
-                             FirebaseFirestore.getInstance()
-                                     .collection("AllSalons")
-                                     .document(Common.state_name)
-                                     .collection("Branch")
-                                     .document(Common.selectedSalon.getSalonId())
-                                     .collection("Barber")
-                                     .document(Common.currentBarber.getBarberId())
-                                     .collection(Common.simpleDateFormat.format(Common.bookingDate.getTime()))
-                                     .document(slotValue.getSlot().toString())
-                                     .get()
-                                     .addOnFailureListener(new OnFailureListener() {
-                                         @Override
-                                         public void onFailure(@NonNull Exception e) {
-                                             Toast.makeText(context, e.getMessage() , Toast.LENGTH_SHORT).show();
+                                 // Get Booking info for full time slots
+                                 FirebaseFirestore.getInstance()
+                                         .collection("AllSalons")
+                                         .document(Common.state_name)
+                                         .collection("Branch")
+                                         .document(Common.selectedSalon.getSalonId())
+                                         .collection("Barber")
+                                         .document(Common.currentBarber.getBarberId())
+                                         .collection(Common.simpleDateFormat.format(Common.bookingDate.getTime()))
+                                         .document(slotValue.getSlot().toString())
+                                         .get()
+                                         .addOnFailureListener(new OnFailureListener() {
+                                             @Override
+                                             public void onFailure(@NonNull Exception e) {
+                                                 Toast.makeText(context, e.getMessage() , Toast.LENGTH_SHORT).show();
+                                             }
+                                         }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                     @Override
+                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                         if (task.isSuccessful()) {
+                                             if (task.getResult().exists()) {
+                                                 Common.currentBookingInformation = task.getResult().toObject(BookingInformation.class);
+                                                 Common.currentBookingInformation.setBookingId(task.getResult().getId());
+                                                 context.startActivity(new Intent(context, DoneServicesActivity.class));
+                                             }
                                          }
-                                     }).addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                 @Override
-                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                     if (task.isSuccessful()) {
-                                         if (task.getResult().exists()) {
-                                             Common.currentBookingInformation = task.getResult().toObject(BookingInformation.class);
-                                             context.startActivity(new Intent(context, DoneServicesActivity.class));
-                                         }
+
                                      }
+                                 });
 
-                                 }
-                             });
+                             }
 
-                         }
+                         });
+                     }
+                     else {
 
-                     });
+                         // if service is done
+
+                         holder.card_time_slot.setTag(Common.DISABLE_TAG);
+                         holder.card_time_slot.setCardBackgroundColor( context.getResources().getColor(android.R.color.holo_orange_dark));
+
+                         holder.txt_time_slot_description.setText("Done");
+                         holder.txt_time_slot_description.setTextColor(context.getResources().getColor(android.R.color.white));
+                         holder.txt_time_slot.setTextColor(context.getResources().getColor(android.R.color.white));
+
+                         holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                             @Override
+                             public void onItemSelectedListener(View view, int pos) {
+
+                             }
+
+                         });
+
+                     }
                  }
                  else {
-                     holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
-                         @Override
-                         public void onItemSelectedListener(View view, int pos) {
+                     if(holder.getiRecyclerItemSelectedListener() == null) {
+                         holder.setiRecyclerItemSelectedListener(new IRecyclerItemSelectedListener() {
+                             @Override
+                             public void onItemSelectedListener(View view, int pos) {
 
-                         }
-                     });
+                             }
+                         });
+                     }
+
                  }
              }
         }
@@ -152,6 +178,10 @@ public class MyTimeSlotAdapter extends RecyclerView.Adapter<MyTimeSlotAdapter.My
         CardView card_time_slot;
 
         IRecyclerItemSelectedListener iRecyclerItemSelectedListener;
+
+        public IRecyclerItemSelectedListener getiRecyclerItemSelectedListener() {
+            return iRecyclerItemSelectedListener;
+        }
 
         public void setiRecyclerItemSelectedListener(IRecyclerItemSelectedListener iRecyclerItemSelectedListener) {
             this.iRecyclerItemSelectedListener = iRecyclerItemSelectedListener;
