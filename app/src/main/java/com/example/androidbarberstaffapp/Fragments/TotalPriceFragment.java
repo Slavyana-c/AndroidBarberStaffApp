@@ -16,13 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.androidbarberstaffapp.Adapter.MyConfirmShoppingItemAdapter;
 import com.example.androidbarberstaffapp.Common.Common;
-import com.example.androidbarberstaffapp.Interface.IBottomSheetDialogOnDismissListener;
 import com.example.androidbarberstaffapp.Model.BarberService;
+import com.example.androidbarberstaffapp.Model.CartItem;
+import com.example.androidbarberstaffapp.Model.EventBus.DismissFromBottomSheetEvent;
 import com.example.androidbarberstaffapp.Model.FCMResponse;
 import com.example.androidbarberstaffapp.Model.FCMSendData;
 import com.example.androidbarberstaffapp.Model.Invoice;
 import com.example.androidbarberstaffapp.Model.MyToken;
-import com.example.androidbarberstaffapp.Model.ShoppingItem;
 import com.example.androidbarberstaffapp.R;
 import com.example.androidbarberstaffapp.Retrofit.IFCMService;
 import com.example.androidbarberstaffapp.Retrofit.RetrofitClient;
@@ -40,10 +40,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -85,10 +86,9 @@ public class TotalPriceFragment extends BottomSheetDialogFragment {
     Button btn_confirm;
 
     HashSet<BarberService> servicesAdded;
-    List<ShoppingItem> shoppingItemList;
+    //List<ShoppingItem> shoppingItemList;
 
     IFCMService ifcmService;
-    IBottomSheetDialogOnDismissListener iBottomSheetDialogOnDismissListener;
 
     AlertDialog dialog;
 
@@ -96,12 +96,9 @@ public class TotalPriceFragment extends BottomSheetDialogFragment {
 
     private static TotalPriceFragment instance;
 
-    public TotalPriceFragment(IBottomSheetDialogOnDismissListener iBottomSheetDialogOnDismissListener) {
-        this.iBottomSheetDialogOnDismissListener = iBottomSheetDialogOnDismissListener;
-    }
 
-    public static TotalPriceFragment getInstance(IBottomSheetDialogOnDismissListener iBottomSheetDialogOnDismissListener) {
-        return instance == null ? new TotalPriceFragment(iBottomSheetDialogOnDismissListener) : instance;
+    public static TotalPriceFragment getInstance( ) {
+        return instance == null ? new TotalPriceFragment() : instance;
     }
 
     @Nullable
@@ -148,13 +145,15 @@ public class TotalPriceFragment extends BottomSheetDialogFragment {
             }
         }
 
+        if(Common.currentBookingInformation.getCartItemList() != null) {
 
-        if(shoppingItemList.size() > 0) {
-            MyConfirmShoppingItemAdapter adapter = new MyConfirmShoppingItemAdapter(getContext(), shoppingItemList);
-            recycler_view_shopping.setAdapter(adapter);
+            if(Common.currentBookingInformation.getCartItemList().size() > 0) {
+                MyConfirmShoppingItemAdapter adapter = new MyConfirmShoppingItemAdapter(getContext(), Common.currentBookingInformation.getCartItemList());
+                recycler_view_shopping.setAdapter(adapter);
 
+            }
+            calculatePrice();
         }
-        calculatePrice();
     }
 
     private double calculatePrice() {
@@ -162,8 +161,11 @@ public class TotalPriceFragment extends BottomSheetDialogFragment {
 
         for(BarberService service:servicesAdded)
             price += service.getPrice();
-        for(ShoppingItem shoppingItem:shoppingItemList)
-            price += shoppingItem.getPrice();
+
+        if(Common.currentBookingInformation.getCartItemList() != null) {
+            for(CartItem cartItem: Common.currentBookingInformation.getCartItemList())
+                price += (cartItem.getProductPrice() * cartItem.getProductQuantity());
+        }
 
         txt_total_price.setText(new StringBuilder(Common.MONEY_SIGN).append(price));
 
@@ -175,9 +177,9 @@ public class TotalPriceFragment extends BottomSheetDialogFragment {
                 .fromJson(arguments.getString(Common.SERVICES_ADDED),
                         new TypeToken<HashSet<BarberService>>(){}.getType());
 
-        this.shoppingItemList = new Gson()
-                .fromJson(arguments.getString(Common.SHOPPING_LIST),
-                        new TypeToken<List<ShoppingItem>>(){}.getType());
+//        this.shoppingItemList = new Gson()
+//                .fromJson(arguments.getString(Common.SHOPPING_LIST),
+//                        new TypeToken<List<ShoppingItem>>(){}.getType());
 
         image_url = arguments.getString(Common.IMAGE_DOWNLOADABLE_URL);
     }
@@ -265,7 +267,7 @@ public class TotalPriceFragment extends BottomSheetDialogFragment {
         invoice.setImageUrl(image_url);
 
         invoice.setBarberServices(new ArrayList<BarberService>(servicesAdded));
-        invoice.setShoppingItemList(shoppingItemList);
+        invoice.setShoppingItemList(Common.currentBookingInformation.getCartItemList());
         invoice.setFinalPrice(calculatePrice());
 
         invoiceRef.document()
@@ -325,7 +327,8 @@ public class TotalPriceFragment extends BottomSheetDialogFragment {
                                             public void accept(FCMResponse fcmResponse) throws Exception {
                                                 dialog.dismiss();
                                                 dismiss();
-                                                iBottomSheetDialogOnDismissListener.onDismissBottomSheetDialog(true);
+                                                EventBus.getDefault()
+                                                        .postSticky(new DismissFromBottomSheetEvent(true));
                                             }
                                         }, new Consumer<Throwable>() {
                                             @Override
